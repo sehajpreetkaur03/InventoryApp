@@ -1,7 +1,9 @@
 import json
+from decimal import Decimal
+
 import boto3
 from boto3.dynamodb.conditions import Key
-from decimal import Decimal
+
 
 # Same Decimal helper style as in the slides
 def convert_decimals(obj):

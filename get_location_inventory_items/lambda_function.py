@@ -28,9 +28,17 @@ def lambda_handler(event, context):
     """
 
     path_params = event.get("pathParameters") or {}
-    location_id = path_params.get("id")
+    query_params = event.get("queryStringParameters") or {}
 
-    if location_id is None:
+    # 🔹 Look for BOTH "id" and "location_id"
+    location_id = (
+        path_params.get("id")
+        or path_params.get("location_id")
+        or (query_params.get("id") if query_params else None)
+        or (query_params.get("location_id") if query_params else None)
+    )
+
+    if not location_id:
         return {
             "statusCode": 400,
             "body": json.dumps({"message": "Missing location id"})
@@ -39,13 +47,12 @@ def lambda_handler(event, context):
     try:
         location_id_num = int(location_id)
 
-        # FIXED — use correct field name: location_id
+        # Use correct field name from your table: location_id
         response = table.scan(
             FilterExpression=Attr("location_id").eq(location_id_num)
         )
 
         items = response.get("Items", [])
-
         items = _convert_decimal(items)
 
         return {
